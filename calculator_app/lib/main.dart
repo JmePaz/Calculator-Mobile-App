@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:math_expressions/math_expressions.dart';
 
 void main() {
   runApp(const MyApp());
@@ -37,8 +38,8 @@ class CalculatePage extends StatefulWidget {
 }
 
 class _CalculatePageState extends State<CalculatePage> {
-  String _equation = "7 + 8";
-  String _answer = "15";
+  String _equation = "";
+  String _answer = "= ";
   
   
   Widget displaySection(){
@@ -53,11 +54,11 @@ class _CalculatePageState extends State<CalculatePage> {
           Container(
             margin: const EdgeInsets.only(bottom: 10),
             child: Text(_equation, 
-                    style: const TextStyle(fontSize: 38, fontWeight: FontWeight.bold)
+                    style: const TextStyle(fontSize: 38, fontWeight: FontWeight.w300)
                     )
           ),
-          const Text("= 15",
-            style: TextStyle(fontSize:27, color: Color.fromARGB(255, 72, 71, 71)
+          Text(_answer,
+            style: const TextStyle(fontSize:27, color: Color.fromARGB(255, 72, 71, 71)
             , fontStyle:  FontStyle.italic)
           )
         ]
@@ -75,7 +76,9 @@ class _CalculatePageState extends State<CalculatePage> {
             padding: const EdgeInsets.all(3),
             ),
             onPressed: () => {
-
+                setState(() => {
+                  _equation = ''
+                })
             },
             child: const Text("Clr", style: TextStyle(fontSize: 22, color: Colors.orange)),
           ),
@@ -85,9 +88,13 @@ class _CalculatePageState extends State<CalculatePage> {
             padding: const EdgeInsets.all(3),
             ),
             onPressed: () => {
-
+              setState(() => {
+                  if(_equation.isNotEmpty){
+                    _equation = _equation.substring(0, _equation.length-1)
+                 }
+                })
             },
-            child: const Text("<x|", style: TextStyle(fontSize: 22, color: Colors.orange)),
+            child: const Text("Del", style: TextStyle(fontSize: 22, color: Colors.orange)),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
@@ -95,7 +102,11 @@ class _CalculatePageState extends State<CalculatePage> {
             padding: const EdgeInsets.all(3),
             ),
             onPressed: () => {
-
+              setState(() =>{
+                if(_equation.isNotEmpty && !". ".contains(_equation[_equation.length - 1])){
+                  _equation = '$_equation.'
+                }
+              })
             },
             child: const Text(".", style: TextStyle(fontSize: 22, color: Colors.orange)),
           )
@@ -110,7 +121,9 @@ class _CalculatePageState extends State<CalculatePage> {
               padding: const EdgeInsets.symmetric(vertical: 18, horizontal:5),
             ),
             onPressed: () => {
-
+                setState(() => {
+                  _equation = '$_equation$key'
+                })
             },
             child: Text(key, style: const TextStyle(fontSize: 22, color: Colors.black))
           );
@@ -145,7 +158,11 @@ class _CalculatePageState extends State<CalculatePage> {
     Container(
       margin: const EdgeInsets.symmetric(vertical: 9.0),
       child: ElevatedButton(
-        onPressed: () => {},
+        onPressed: () => {
+          setState(() => {
+                  _equation = '$_equation $value '
+                })
+        },
         style: ElevatedButton.styleFrom(
           shape: const CircleBorder(),
           backgroundColor: Colors.white,
@@ -158,7 +175,26 @@ class _CalculatePageState extends State<CalculatePage> {
     );
   }
 
-  
+  void equalPushed(){
+    try{
+      var fEquation = _equation.trim();
+      fEquation = fEquation.replaceAll('X', '*').replaceAll('÷', '/');
+
+      Parser parser = Parser();
+      Expression exp = parser.parse(fEquation);
+      double eval = exp.evaluate(EvaluationType.REAL, ContextModel());
+
+      setState(()=>{
+        _answer = '= $eval'
+      });
+    }
+    catch (e){
+      ScaffoldMessenger.of(context)
+                  .showSnackBar(const SnackBar(
+                    content: Text("The system detected your equation has an error."), 
+                    duration: Duration(seconds: 3)));
+    }
+  } 
 
   @override
   Widget build(BuildContext context) {
@@ -199,7 +235,7 @@ class _CalculatePageState extends State<CalculatePage> {
                         operatorBtn("X", Icons.close),
                         operatorBtn("÷", null),
                         ElevatedButton(
-                          onPressed: () => {},
+                          onPressed: equalPushed,
                           style: ElevatedButton.styleFrom(
                             shape: const CircleBorder(),
                             backgroundColor: Colors.orange,
