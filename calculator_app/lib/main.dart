@@ -52,13 +52,18 @@ class _CalculatePageState extends State<CalculatePage> {
         crossAxisAlignment: CrossAxisAlignment.end,
         children : <Widget>[
           Container(
-            margin: const EdgeInsets.only(bottom: 10),
-            child: Text(_equation, 
-                    style: const TextStyle(fontSize: 38, fontWeight: FontWeight.w300)
-                    )
+            margin: const EdgeInsets.only(bottom: 20),
+            child: RawScrollbar( child: SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    reverse: true,
+                    child:Text(_equation, 
+                          style: const TextStyle(fontSize: 38, fontWeight: FontWeight.w300)
+                          )
+            )
+            )
           ),
           Text(_answer,
-            style: const TextStyle(fontSize:27, color: Color.fromARGB(255, 72, 71, 71)
+            style: const TextStyle(fontSize:25, color: Color.fromARGB(255, 72, 71, 71)
             , fontStyle:  FontStyle.italic)
           )
         ]
@@ -178,7 +183,9 @@ class _CalculatePageState extends State<CalculatePage> {
   void equalPushed(){
     try{
       var fEquation = _equation.trim();
+      //replace necessary changes
       fEquation = fEquation.replaceAll('X', '*').replaceAll('÷', '/');
+      fEquation = fEquation.replaceAllMapped(RegExp(r'([0-9])(\()'), (r)=> "${r[1]} * (");
 
       Parser parser = Parser();
       Expression exp = parser.parse(fEquation);
@@ -192,7 +199,7 @@ class _CalculatePageState extends State<CalculatePage> {
       ScaffoldMessenger.of(context)
                   .showSnackBar(const SnackBar(
                     content: Text("The system detected your equation has an error."), 
-                    duration: Duration(seconds: 3)));
+                    duration:  Duration(seconds: 3)));
     }
   } 
 
